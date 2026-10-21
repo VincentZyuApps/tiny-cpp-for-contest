@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib",
+    "baseUrl": ".",
+    "paths": {
+      "tiny-cpp-for-contest-core": ["../core/src/index.ts"]
+    }
+  },
+  "include": [
+    "src"
+  ]
+}

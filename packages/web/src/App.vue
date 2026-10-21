@@ -1,0 +1,720 @@
+<template>
+  <div class="app-root">
+    <!-- 顶部导航栏 -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="logo">⚡</span>
+        <div class="brand-text">
+          <h1>Tiny C++ for Contest</h1>
+          <span class="subtitle">程序就是一个状态机 —— 致敬南京大学 蒋炎岩 (jyy) 老师</span>
+        </div>
+      </div>
+
+      <!-- 模式切换与预置案例 -->
+      <div class="top-actions">
+        <!-- 预设案例选择器 -->
+        <div class="select-group">
+          <label>📚 预设教学案例:</label>
+          <select v-model="selectedExampleId" @change="loadSelectedExample">
+            <option v-for="ex in PRESET_EXAMPLES" :key="ex.id" :value="ex.id">
+              {{ ex.title }}
+            </option>
+          </select>
+        </div>
+
+        <!-- 三种工作模式 -->
+        <div class="mode-tabs">
+          <button
+            class="mode-btn"
+            :class="{ active: currentMode === 'batch' }"
+            @click="switchMode('batch')"
+          >
+            🚀 纯编译运行 (Batch)
+          </button>
+          <button
+            class="mode-btn"
+            :class="{ active: currentMode === 'stepper' }"
+            @click="switchMode('stepper')"
+          >
+            🐞 步进调试 (Stepper)
+          </button>
+          <button
+            class="mode-btn"
+            :class="{ active: currentMode === 'repl' }"
+            @click="switchMode('repl')"
+          >
+            ⚡ 动态解释 (REPL)
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主操作区 (双栏布局) -->
+    <main class="main-body">
+      <!-- 左栏: 代码编辑区 (带当前执行行指示) -->
+      <section class="editor-section">
+        <div class="panel-header">
+          <span>📝 C++ 源码编辑器 (Contest Subset)</span>
+          <span class="status-indicator">当前行: L{{ currentLine || 1 }}</span>
+        </div>
+        <div class="editor-container">
+          <!-- 行号栏与光标指示 -->
+          <div class="line-gutter">
+            <div
+              v-for="lineNum in lineCount"
+              :key="lineNum"
+              class="gutter-cell"
+              :class="{ 'active-line': lineNum === currentLine }"
+            >
+              <span v-if="lineNum === currentLine" class="arrow-cursor">👉</span>
+              <span class="line-num">{{ lineNum }}</span>
+            </div>
+          </div>
+          <!-- 源码输入框 -->
+          <textarea
+            class="code-textarea"
+            v-model="sourceCode"
+            spellcheck="false"
+            @input="onCodeChange"
+            placeholder="在此输入 C++ 代码..."
+          ></textarea>
+        </div>
+      </section>
+
+      <!-- 右栏: 控制器、变量观察器与标准 I/O -->
+      <section class="side-section">
+        <!-- 调试控制栏 (四键天王) -->
+        <div class="control-panel">
+          <div class="btn-group">
+            <button class="btn btn-secondary" title="上一行 (时间旅行倒流)" @click="handlePrevLine">
+              ⏮ 上一行
+            </button>
+            <button class="btn btn-primary" title="下一行 (Step Over)" @click="handleNextLine">
+              ⏭ 下一行
+            </button>
+            <button class="btn btn-secondary" title="上一步微步" @click="handlePrevStep">
+              ⏪ 上一步
+            </button>
+            <button class="btn btn-primary" title="下一步微步" @click="handleNextStep">
+              ⏩ 下一步
+            </button>
+            <button class="btn btn-success" title="全速运行到底" @click="handleRunAll">
+              ⏯ 运行到底
+            </button>
+            <button class="btn btn-danger" title="重置状态机" @click="handleReset">
+              🔄 重置
+            </button>
+          </div>
+
+          <!-- 评测状态指标 -->
+          <div class="stats-bar">
+            <span>步数: <strong>{{ executedSteps }}</strong></span>
+            <span>耗时: <strong>{{ elapsedMs }}ms</strong></span>
+            <span v-if="judgeStatus" class="status-badge" :class="judgeStatus.toLowerCase()">
+              {{ judgeStatus }}
+            </span>
+          </div>
+        </div>
+
+        <!-- 变量作用域监视器 (Scope Watcher) -->
+        <div class="scope-panel">
+          <div class="panel-header">
+            <span>🔍 作用域变量监视 (Scope Watcher)</span>
+            <span class="count-badge">{{ Object.keys(currentScope).length }} 变量</span>
+          </div>
+          <div class="scope-content">
+            <table v-if="Object.keys(currentScope).length > 0" class="scope-table">
+              <thead>
+                <tr>
+                  <th>变量名</th>
+                  <th>类型 / 结构</th>
+                  <th>当前值</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(val, key) in currentScope" :key="key">
+                  <td class="mono var-key">{{ key }}</td>
+                  <td class="var-type">{{ formatType(val) }}</td>
+                  <td class="mono var-val">{{ formatValue(val) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-else class="empty-scope">环境为空或尚未初始化</div>
+          </div>
+        </div>
+
+        <!-- 标准输入输出 (I/O 流) -->
+        <div class="io-panel">
+          <div class="io-half">
+            <div class="panel-header">
+              <span>📥 标准输入 (stdin)</span>
+            </div>
+            <textarea
+              class="io-textarea"
+              v-model="stdinText"
+              placeholder="输入数据 (以空格或换行分隔)..."
+            ></textarea>
+          </div>
+          <div class="io-half">
+            <div class="panel-header">
+              <span>📤 标准输出 (stdout)</span>
+            </div>
+            <pre class="stdout-terminal">{{ stdoutBuffer || '[暂无输出]' }}</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 底部: 📊 jyy 状态机图模型 -->
+    <footer class="bottom-graph">
+      <StateMachineGraph
+        :graph="stateGraph"
+        :active-node-id="activeNodeId"
+        @select-node="onSelectNode"
+      />
+    </footer>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import {
+  PRESET_EXAMPLES,
+  createVM,
+  runCode,
+  judgeCode,
+  VirtualMachine,
+  HostVector,
+  HostString,
+  HostPair,
+  HostQueue,
+  HostStack,
+  HostPriorityQueue,
+} from 'tiny-cpp-for-contest-core';
+import StateMachineGraph from './components/StateMachineGraph.vue';
+
+// 模式
+type RunMode = 'batch' | 'stepper' | 'repl';
+const currentMode = ref<RunMode>('stepper');
+
+// 案例
+const selectedExampleId = ref('gcd-statemachine');
+const sourceCode = ref('');
+const stdinText = ref('');
+const expectedStdout = ref('');
+
+// 虚拟机状态
+let vm: VirtualMachine | null = null;
+const currentLine = ref(1);
+const currentScope = ref<Record<string, any>>({});
+const stdoutBuffer = ref('');
+const executedSteps = ref(0);
+const elapsedMs = ref(0);
+const judgeStatus = ref<string | null>(null);
+
+// 状态机图数据
+const stateGraph = ref<{ nodes: any[]; edges: any[] }>({ nodes: [], edges: [] });
+const activeNodeId = ref<string>('');
+
+// 计算行数
+const lineCount = computed(() => {
+  return sourceCode.value.split('\n').length || 1;
+});
+
+// 载入预设案例
+function loadSelectedExample() {
+  const ex = PRESET_EXAMPLES.find((e) => e.id === selectedExampleId.value);
+  if (ex) {
+    sourceCode.value = ex.code;
+    stdinText.value = ex.stdin;
+    expectedStdout.value = ex.expected;
+    handleReset();
+  }
+}
+
+function onCodeChange() {
+  handleReset();
+}
+
+function switchMode(mode: RunMode) {
+  currentMode.value = mode;
+  handleReset();
+  if (mode === 'batch') {
+    handleRunAll();
+  }
+}
+
+function handleReset() {
+  try {
+    vm = createVM(sourceCode.value, stdinText.value);
+    const snap = vm.step(); // 步入第一条语句前
+    currentLine.value = snap.line;
+    currentScope.value = snap.scope;
+    stdoutBuffer.value = snap.stdout;
+    executedSteps.value = snap.stepIndex;
+    elapsedMs.value = 0;
+    judgeStatus.value = null;
+
+    updateGraph();
+  } catch (err: any) {
+    judgeStatus.value = 'CE';
+    stdoutBuffer.value = String(err?.message || err);
+  }
+}
+
+function updateGraph() {
+  if (vm) {
+    stateGraph.value = vm.getTraceGraph();
+    const lastNode = stateGraph.value.nodes[stateGraph.value.nodes.length - 1];
+    activeNodeId.value = lastNode?.id || '';
+  }
+}
+
+// 四键天王调试动作
+function handleNextStep() {
+  if (!vm) handleReset();
+  if (!vm) return;
+
+  const snap = vm.step();
+  currentLine.value = snap.line;
+  currentScope.value = snap.scope;
+  stdoutBuffer.value = snap.stdout;
+  executedSteps.value = snap.stepIndex;
+
+  updateGraph();
+}
+
+function handlePrevStep() {
+  if (!vm) return;
+  const snap = vm.stepPrev();
+  if (snap) {
+    currentLine.value = snap.line;
+    currentScope.value = snap.scope;
+    stdoutBuffer.value = snap.stdout;
+    executedSteps.value = snap.stepIndex;
+    updateGraph();
+  }
+}
+
+function handleNextLine() {
+  if (!vm) handleReset();
+  if (!vm) return;
+
+  const startLine = currentLine.value;
+  // 一直单步，直到行号发生变化或程序结束
+  for (let i = 0; i < 50; i++) {
+    const snap = vm.step();
+    currentLine.value = snap.line;
+    currentScope.value = snap.scope;
+    stdoutBuffer.value = snap.stdout;
+    executedSteps.value = snap.stepIndex;
+    if (snap.done || snap.line !== startLine) break;
+  }
+  updateGraph();
+}
+
+function handlePrevLine() {
+  if (!vm) return;
+  const startLine = currentLine.value;
+  for (let i = 0; i < 50; i++) {
+    const snap = vm.stepPrev();
+    if (!snap) break;
+    currentLine.value = snap.line;
+    currentScope.value = snap.scope;
+    stdoutBuffer.value = snap.stdout;
+    executedSteps.value = snap.stepIndex;
+    if (snap.line !== startLine) break;
+  }
+  updateGraph();
+}
+
+function handleRunAll() {
+  const startTime = Date.now();
+  if (expectedStdout.value && expectedStdout.value.trim() !== '-') {
+    const res = judgeCode(sourceCode.value, stdinText.value, expectedStdout.value);
+    stdoutBuffer.value = res.stdout;
+    executedSteps.value = res.steps;
+    elapsedMs.value = res.elapsedMs;
+    judgeStatus.value = res.status;
+    if (res.graph) {
+      stateGraph.value = res.graph;
+      activeNodeId.value = res.graph.nodes[res.graph.nodes.length - 1]?.id || '';
+    }
+  } else {
+    const res = runCode(sourceCode.value, stdinText.value);
+    stdoutBuffer.value = res.stdout;
+    executedSteps.value = res.steps;
+    elapsedMs.value = res.elapsedMs;
+    judgeStatus.value = res.status;
+    if (res.graph) {
+      stateGraph.value = res.graph;
+      activeNodeId.value = res.graph.nodes[res.graph.nodes.length - 1]?.id || '';
+    }
+  }
+}
+
+function onSelectNode(node: any) {
+  currentLine.value = node.line;
+  currentScope.value = node.variables;
+  activeNodeId.value = node.id;
+}
+
+function formatType(val: any): string {
+  if (val instanceof HostVector) return `vector (${val.size()})`;
+  if (val instanceof HostPair) return `pair<T, T>`;
+  if (val instanceof HostString) return `string`;
+  if (val instanceof HostQueue) return `queue (${val.size()})`;
+  if (val instanceof HostStack) return `stack (${val.size()})`;
+  if (val instanceof HostPriorityQueue) return `priority_queue (${val.size()})`;
+  if (Array.isArray(val)) return `Array[${val.length}]`;
+  return typeof val;
+}
+
+function formatValue(val: any): string {
+  if (val instanceof HostVector) {
+    const slice = val.data.slice(0, 5).join(', ');
+    return `[${slice}${val.size() > 5 ? '...' : ''}]`;
+  }
+  if (val instanceof HostQueue) {
+    return `front: ${val.empty() ? 'empty' : val.front()} (len ${val.size()})`;
+  }
+  if (val instanceof HostStack) {
+    return `top: ${val.empty() ? 'empty' : val.top()} (len ${val.size()})`;
+  }
+  if (val instanceof HostPriorityQueue) {
+    return `top: ${val.empty() ? 'empty' : val.top()} (len ${val.size()})`;
+  }
+  if (val instanceof HostPair) {
+    return `{ first: ${val.first}, second: ${val.second} }`;
+  }
+  if (val instanceof HostString) {
+    return `"${val.data}"`;
+  }
+  if (Array.isArray(val)) {
+    return `[${val.slice(0, 5).join(', ')}${val.length > 5 ? '...' : ''}]`;
+  }
+  return String(val);
+}
+
+onMounted(() => {
+  loadSelectedExample();
+});
+</script>
+
+<style scoped>
+.app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #0b1120;
+}
+
+/* 顶部导航 */
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: #0f172a;
+  border-bottom: 1px solid #1e293b;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand .logo {
+  font-size: 28px;
+}
+
+.brand h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.brand .subtitle {
+  font-size: 11px;
+  color: #38bdf8;
+  font-style: italic;
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.select-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.select-group select {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 6px 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.mode-tabs {
+  display: flex;
+  background: #1e293b;
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.mode-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  background: #3b82f6;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* 主操作区 */
+.main-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-section {
+  flex: 1.2;
+  border-right: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #090d16;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  background: #131d31;
+  border-bottom: 1px solid #1e293b;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.editor-container {
+  display: flex;
+  flex: 1;
+  background: #020617;
+  overflow: hidden;
+}
+
+.line-gutter {
+  width: 45px;
+  background: #090d16;
+  border-right: 1px solid #1e293b;
+  user-select: none;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.gutter-cell {
+  height: 22px;
+  line-height: 22px;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-size: 12px;
+  color: #475569;
+  position: relative;
+}
+
+.gutter-cell.active-line {
+  background: #1e293b;
+  color: #38bdf8;
+  font-weight: bold;
+}
+
+.arrow-cursor {
+  position: absolute;
+  left: 4px;
+  font-size: 10px;
+}
+
+.code-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 22px;
+  padding: 8px 12px;
+  resize: none;
+  white-space: pre;
+}
+
+/* 控制面板 */
+.control-panel {
+  padding: 10px 14px;
+  background: #0f172a;
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-group {
+  display: flex;
+  gap: 6px;
+}
+
+.btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary { background: #2563eb; color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-secondary { background: #334155; color: #cbd5e1; }
+.btn-secondary:hover { background: #475569; }
+.btn-success { background: #16a34a; color: #fff; }
+.btn-success:hover { background: #15803d; }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
+
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.status-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.status-badge.ac { background: #16a34a; color: #fff; }
+.status-badge.wa { background: #dc2626; color: #fff; }
+.status-badge.tle { background: #ca8a04; color: #fff; }
+.status-badge.ce { background: #9333ea; color: #fff; }
+.status-badge.re { background: #ea580c; color: #fff; }
+
+/* 变量监视器 */
+.scope-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #1e293b;
+  overflow: hidden;
+}
+
+.scope-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 12px;
+  background: #020617;
+}
+
+.scope-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.scope-table th {
+  text-align: left;
+  color: #64748b;
+  padding: 4px 6px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.scope-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #0f172a;
+}
+
+.var-key { color: #38bdf8; font-weight: bold; }
+.var-type { color: #a5b4fc; }
+.var-val { color: #4ade80; }
+
+.empty-scope {
+  color: #475569;
+  font-size: 12px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* I/O 面板 */
+.io-panel {
+  height: 160px;
+  display: flex;
+  border-top: 1px solid #1e293b;
+}
+
+.io-half {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.io-half:first-child {
+  border-right: 1px solid #1e293b;
+}
+
+.io-textarea {
+  flex: 1;
+  background: #020617;
+  color: #cbd5e1;
+  border: none;
+  outline: none;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  resize: none;
+}
+
+.stdout-terminal {
+  flex: 1;
+  background: #000000;
+  color: #4ade80;
+  padding: 6px 10px;
+  font-size: 12px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* 底部状态机 */
+.bottom-graph {
+  border-top: 1px solid #1e293b;
+}
+</style>

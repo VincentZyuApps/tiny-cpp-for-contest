@@ -1,0 +1,26 @@
+{
+  "name": "tiny-cpp-for-contest-monorepo",
+  "version": "0.1.0-beta.1+20261022",
+  "private": true,
+  "description": "纯 TypeScript 实现的算法竞赛级 C++ 运行时与教学级状态机调试工具",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn --cwd packages/core build && yarn --cwd packages/koishi-plugin build",
+    "test": "yarn --cwd packages/core test",
+    "sync": "uv run python scripts/sync_plugin.py",
+    "bump": "uv run python scripts/bump_version.py"
+  },
+  "keywords": [
+    "cpp",
+    "interpreter",
+    "compiler",
+    "state-machine",
+    "contest",
+    "algorithm",
+    "koishi"
+  ],
+  "author": "VincentZyu",
+  "license": "MIT"
+}
