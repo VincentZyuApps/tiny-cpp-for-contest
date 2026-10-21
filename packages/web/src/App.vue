@@ -146,6 +146,13 @@
               <button class="btn btn-danger" title="重置状态机" @click="handleReset">
                 🔄 重置
               </button>
+              <button
+                class="btn btn-secondary"
+                :title="isGraphExpanded ? '点击隐藏/收起底部状态机图谱' : '点击展开/查看底部状态机图谱'"
+                @click="isGraphExpanded = !isGraphExpanded"
+              >
+                {{ isGraphExpanded ? '🙈 隐藏状态图' : '📊 显示状态图' }}
+              </button>
             </div>
           </div>
 
@@ -213,6 +220,7 @@
       <StateMachineGraph
         :graph="stateGraph"
         :active-node-id="activeNodeId"
+        v-model:expanded="isGraphExpanded"
         @select-node="onSelectNode"
         @select-line="onSelectLine"
       />
@@ -242,11 +250,14 @@ import CodeEditor from './components/CodeEditor.vue';
 type RunMode = 'batch' | 'stepper' | 'repl';
 const currentMode = ref<RunMode>('stepper');
 
-// 案例
-const selectedExampleId = ref('gcd-statemachine');
+// 案例 (默认选用第 0 项空白模板)
+const selectedExampleId = ref('blank');
 const sourceCode = ref('');
 const stdinText = ref('');
 const expectedStdout = ref('');
+
+// 状态图展开/折叠状态 (默认隐藏折叠，用户可随时点击展开或选择 GCD 状态机案例自动展开)
+const isGraphExpanded = ref(false);
 
 // 虚拟机状态
 let vm: VirtualMachine | null = null;
@@ -273,6 +284,14 @@ function loadSelectedExample() {
     sourceCode.value = ex.code;
     stdinText.value = ex.stdin;
     expectedStdout.value = ex.expected;
+
+    // 当选择 blank (用户自定义代码) 默认隐藏状态图；选择 gcd 状态机教学案例自动展开
+    if (ex.id === 'gcd-statemachine') {
+      isGraphExpanded.value = true;
+    } else if (ex.id === 'blank') {
+      isGraphExpanded.value = false;
+    }
+
     handleReset();
   }
 }

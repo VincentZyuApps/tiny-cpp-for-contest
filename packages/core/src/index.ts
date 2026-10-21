@@ -17,12 +17,26 @@ export * from './parser/index';
 export * from './runtime/index';
 
 /**
- * 预置 5 套教学与演示案例集 (供 WebUI 与 Koishi 插件共享)
+ * 预置 6 套教学与演示案例集 (供 WebUI 与 Koishi 插件共享)
  */
 export const PRESET_EXAMPLES = [
   {
+    id: 'blank',
+    title: '0. 空白模板 (📄 自定义代码)',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    // 在此输入你的 C++ 代码
+    cout << "Hello, tiny-cpp!" << endl;
+    return 0;
+}`,
+    stdin: '',
+    expected: 'Hello, tiny-cpp!\n',
+  },
+  {
     id: 'p1001-ab',
-    title: '1. 洛谷 P1001 A+B Problem (极速验证)',
+    title: '1. 洛谷 P1001 A+B Problem (⚡ 极速验证)',
     code: `#include <iostream>
 using namespace std;
 #define int long long
@@ -56,7 +70,7 @@ int main() {
   },
   {
     id: 'p1428-fishes',
-    title: '3. 洛谷 P1428 小鱼比可爱 (分支循环与数组)',
+    title: '3. 洛谷 P1428 小鱼比可爱 (🐟 分支循环与数组)',
     code: `#include <iostream>
 using namespace std;
 int a[105];
@@ -81,7 +95,7 @@ int main() {
   },
   {
     id: 'stl-vector-sort',
-    title: '4. STL 容器与排序 (vector<pair> + sort + 范围 for)',
+    title: '4. STL 容器与排序 (📦 vector<pair> + sort + 范围 for)',
     code: `#include <iostream>
 #include <vector>
 #include <algorithm>
@@ -107,7 +121,7 @@ int main() {
   },
   {
     id: 'func-ref-swap',
-    title: '5. 引用传参与自定义函数 (void swap(int &a, int &b))',
+    title: '5. 引用传参与自定义函数 (🔄 void swap(int &a, int &b))',
     code: `#include <iostream>
 using namespace std;
 void my_swap(int &x, int &y) {

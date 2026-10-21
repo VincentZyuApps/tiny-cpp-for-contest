@@ -11,7 +11,7 @@
 
 > [!WARNING]
 > **项目快速迭代与完善中**
-> - 本项目当前处于初版（`v0.1.4-beta`）快速开发与演进阶段，部分复杂或边缘的 C++ 语法及 STL 深度特性仍在逐步补全中，可能存在未预期的边界行为。
+> - 本项目当前处于初版（`v0.1.5-beta`）快速开发与演进阶段，部分复杂或边缘的 C++ 语法及 STL 深度特性仍在逐步补全中，可能存在未预期的边界行为。
 > - 非常欢迎在日常使用或算法题测试中发现 Bug 时提交 [GitHub Issues](https://github.com/VincentZyuApps/tiny-cpp-for-contest/issues)，更欢迎提交 Pull Request 共同完善这一有趣的纯 TS 状态机运行时！🎉
 
 ---

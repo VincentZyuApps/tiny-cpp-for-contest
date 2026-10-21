@@ -1,5 +1,5 @@
 <template>
-  <div class="state-machine-container">
+  <div class="state-machine-container" :class="{ collapsed: !expanded }">
     <div class="sm-header">
       <div class="sm-title">
         <span class="icon">📊</span>
@@ -7,22 +7,31 @@
         <span class="jyy-quote">“程序不过是一个状态机。 —— 致敬南京大学 蒋炎岩 (jyy) 老师”</span>
       </div>
       <div class="sm-controls">
-        <label class="slider-label">
-          窗口追踪 (最近 {{ windowSize }} 步):
-          <input
-            type="range"
-            min="10"
-            max="80"
-            step="5"
-            v-model.number="windowSize"
-          />
-        </label>
-        <span class="badge">总状态节点: {{ graph.nodes.length }}</span>
+        <template v-if="expanded">
+          <label class="slider-label">
+            窗口追踪 (最近 {{ windowSize }} 步):
+            <input
+              type="range"
+              min="10"
+              max="80"
+              step="5"
+              v-model.number="windowSize"
+            />
+          </label>
+          <span class="badge">总状态节点: {{ graph.nodes.length }}</span>
+        </template>
+        <button
+          class="toggle-graph-btn"
+          @click="toggleExpand"
+          :title="expanded ? '点击收起/隐藏底部状态机图谱' : '点击展开/查看底部状态机图谱'"
+        >
+          {{ expanded ? '🙈 隐藏状态图 ▼' : '👁️ 显示状态图 ▲' }}
+        </button>
       </div>
     </div>
 
     <!-- 状态机画布 -->
-    <div class="sm-canvas-wrapper" ref="canvasWrapper">
+    <div v-show="expanded" class="sm-canvas-wrapper" ref="canvasWrapper">
       <svg
         v-if="displayNodes.length > 0"
         class="sm-svg"
@@ -135,15 +144,29 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-const props = defineProps<{
-  graph: {
-    nodes: any[];
-    edges: any[];
-  };
-  activeNodeId?: string;
+const props = withDefaults(
+  defineProps<{
+    graph: {
+      nodes: any[];
+      edges: any[];
+    };
+    activeNodeId?: string;
+    expanded?: boolean;
+  }>(),
+  {
+    expanded: true,
+  }
+);
+
+const emit = defineEmits<{
+  (e: 'select-node', node: any): void;
+  (e: 'select-line', line: number): void;
+  (e: 'update:expanded', value: boolean): void;
 }>();
 
-defineEmits(['select-node', 'select-line']);
+function toggleExpand() {
+  emit('update:expanded', !props.expanded);
+}
 
 const windowSize = ref(30);
 
@@ -220,6 +243,11 @@ function getEdgeTooltip(edge: any): string {
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
+  transition: padding 0.2s ease;
+}
+
+.state-machine-container.collapsed {
+  padding: 8px 16px;
 }
 
 .sm-header {
@@ -227,6 +255,10 @@ function getEdgeTooltip(edge: any): string {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+}
+
+.state-machine-container.collapsed .sm-header {
+  margin-bottom: 0;
 }
 
 .sm-title {
@@ -248,6 +280,29 @@ function getEdgeTooltip(edge: any): string {
   align-items: center;
   gap: 16px;
   font-size: 12px;
+}
+
+.toggle-graph-btn {
+  background: #1e293b;
+  color: #38bdf8;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  user-select: none;
+}
+
+.toggle-graph-btn:hover {
+  background: #334155;
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
 }
 
 .slider-label {
