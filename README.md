@@ -8,6 +8,11 @@
 > 🌐 **在线体验 (GitHub Pages)**: <https://vincentzyuapps.github.io/tiny-cpp-for-contest/>  
 > 💻 **本地开发**: 运行 `npm run dev`（默认端口 `61022`）可直接在本地体验！
 
+> [!WARNING]
+> **项目快速迭代与完善中**
+> - 本项目当前处于初版（`v0.1.0-beta`）快速开发与演进阶段，部分复杂或边缘的 C++ 语法及 STL 深度特性仍在逐步补全中，可能存在未预期的边界行为。
+> - 非常欢迎在日常使用或算法题测试中发现 Bug 时提交 [GitHub Issues](https://github.com/VincentZyuApps/tiny-cpp-for-contest/issues)，更欢迎提交 Pull Request 共同完善这一有趣的纯 TS 状态机运行时！🎉
+
 ---
 
 ## 💡 项目哲学：程序就是一个状态机
@@ -108,7 +113,7 @@ yarn && yarn dev
 ## 路线图 (Roadmap)
 
 - [x] **Milestone 1**: 核心骨架搭建、预处理宏清洗、词法与语法分析、状态机运行时、洛谷 P1001 (A+B) 验证通过、Koishi 插件三段交互、Python 同步脚本。
-- [ ] **Milestone 2**: 基础流程控制（`if/else`, `while`, `for`, `break/continue`）与一维数组，通过洛谷 P1428 (小鱼比可爱)。
-- [ ] **Milestone 3**: 宿主 STL 模拟（`vector`, `string`, `pair`, `std::sort`）与引用传参（`int &x`）。
-- [ ] **Milestone 4**: WebUI 可视化单步调试器 (Vite + Vue 3) 与 jyy 状态机图交互联动。
-- [ ] **Milestone 5**: 进阶容器（`queue`, `stack`, `priority_queue`）与 GitHub Actions 自动部署 Pages。
+- [x] **Milestone 2**: 基础流程控制（`if/else`, `while`, `for`, `break/continue`）与一维数组，通过洛谷 P1428 (小鱼比可爱)。
+- [x] **Milestone 3**: 宿主 STL 模拟（`vector`, `string`, `pair`, `std::sort`）与引用传参（`int &x`）。
+- [x] **Milestone 4**: WebUI 可视化单步调试器 (Vite + Vue 3) 与 jyy 状态机图交互联动。
+- [x] **Milestone 5**: 进阶容器（`queue`, `stack`, `priority_queue`）与 GitHub Actions 自动部署 Pages。
