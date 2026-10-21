@@ -289,6 +289,10 @@ function isEdgeActive(edge: any): boolean {
   background: #090d16;
 }
 
+.sm-canvas-wrapper svg text {
+  font-family: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+}
+
 .empty-hint {
   width: 100%;
   text-align: center;
