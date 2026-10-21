@@ -1,0 +1,6 @@
+# GitHub Linguist 语言统计规则配置
+# 显式将 presets/ 目录下的原生 .cpp 与 .json 纳入 GitHub 语言统计条目
+packages/core/presets/*.cpp linguist-documentation=false
+packages/core/presets/*.cpp linguist-detectable=true
+packages/core/presets/*.json linguist-documentation=false
+packages/core/presets/*.json linguist-detectable=true

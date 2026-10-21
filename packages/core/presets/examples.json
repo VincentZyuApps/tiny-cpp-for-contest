@@ -1,0 +1,44 @@
+[
+  {
+    "id": "blank",
+    "title": "0. 空白模板 (📄 自定义代码)",
+    "file": "00_blank.cpp",
+    "stdin": "",
+    "expected": "Hello, tiny-cpp!\n"
+  },
+  {
+    "id": "p1001-ab",
+    "title": "1. 洛谷 P1001 A+B Problem (⚡ 极速验证)",
+    "file": "01_p1001_ab.cpp",
+    "stdin": "20 22",
+    "expected": "42\n"
+  },
+  {
+    "id": "gcd-statemachine",
+    "title": "2. 欧几里得算法 GCD (📊 jyy 状态机图专用)",
+    "file": "02_gcd_statemachine.cpp",
+    "stdin": "48 18",
+    "expected": "6\n"
+  },
+  {
+    "id": "p1428-fishes",
+    "title": "3. 洛谷 P1428 小鱼比可爱 (🐟 分支循环与数组)",
+    "file": "03_p1428_fishes.cpp",
+    "stdin": "6\n4 3 0 5 1 2",
+    "expected": "0 0 0 3 1 2 \n"
+  },
+  {
+    "id": "stl-vector-sort",
+    "title": "4. STL 容器与排序 (📦 vector<pair> + sort + 范围 for)",
+    "file": "04_stl_vector_sort.cpp",
+    "stdin": "4\n30 10 40 20",
+    "expected": "10:1 20:3 30:0 40:2 \n"
+  },
+  {
+    "id": "func-ref-swap",
+    "title": "5. 引用传参与自定义函数 (🔄 void swap(int &a, int &b))",
+    "file": "05_func_ref_swap.cpp",
+    "stdin": "123 456",
+    "expected": "456 123\n"
+  }
+]
