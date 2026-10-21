@@ -85,16 +85,16 @@ tiny-cpp-for-contest/
 
 ### 运行命令
 ```bash
-# 推荐使用 uv 运行:
-uv run python scripts/sync_plugin.py --dst-path "G:\GGames\Minecraft\shuyeyun\qq-bot\koishi-dev\koishi-dev-8"
+# 推荐使用 uv 运行 (示例本地路径如: G:\GGames\Minecraft\shuyeyun\qq-bot\koishi-dev\koishi-dev-8):
+uv run python scripts/sync_plugin.py --dst-path "/path/to/koishi-app"
 
 # 或直接使用 python 运行:
-python scripts/sync_plugin.py --dst-path "G:\GGames\Minecraft\shuyeyun\qq-bot\koishi-dev\koishi-dev-8"
+python scripts/sync_plugin.py --dst-path "/path/to/koishi-app"
 ```
 
 同步完成后，在目标 Koishi 根目录运行以加载插件：
 ```bash
-cd "G:\GGames\Minecraft\shuyeyun\qq-bot\koishi-dev\koishi-dev-8"
+cd "/path/to/koishi-app"
 yarn && yarn dev
 ```
 

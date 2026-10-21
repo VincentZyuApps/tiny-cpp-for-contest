@@ -11,11 +11,11 @@ scripts/sync_plugin.py - 将 packages/koishi-plugin 同步到 Koishi 外部插�
   <dst-path>/external/tiny-cpp-for-contest
 
 【用法示例】
-1. 使用 uv 运行 (推荐):
-   uv run python scripts/sync_plugin.py --dst-path "G:\\GGames\\Minecraft\\shuyeyun\\qq-bot\\koishi-dev\\koishi-dev-8"
+1. 使用 uv 运行 (推荐，本地绝对路径如 "G:\\GGames\\Minecraft\\shuyeyun\\qq-bot\\koishi-dev\\koishi-dev-8"):
+   uv run python scripts/sync_plugin.py --dst-path "/path/to/koishi-app"
 
 2. 使用系统 Python 运行:
-   python scripts/sync_plugin.py --dst-path "G:\\GGames\\Minecraft\\shuyeyun\\qq-bot\\koishi-dev\\koishi-dev-8"
+   python scripts/sync_plugin.py --dst-path "/path/to/koishi-app"
 
 3. 可选参数:
    --clean    在同步前清理目标插件目录中的旧文件
