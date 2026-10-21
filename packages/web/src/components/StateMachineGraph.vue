@@ -55,7 +55,12 @@
         </defs>
 
         <!-- 连线 (Edges) -->
-        <g v-for="edge in displayEdges" :key="edge.id">
+        <g
+          v-for="edge in displayEdges"
+          :key="edge.id"
+          class="edge-group"
+          @click="$emit('select-line', getEdgeLine(edge))"
+        >
           <line
             :x1="getNodeX(edge.source)"
             :y1="getNodeY(edge.source)"
@@ -67,7 +72,7 @@
             :stroke-dasharray="isEdgeActive(edge) ? '4 2' : 'none'"
             class="transition-edge"
           />
-          <!-- 边上的动作文字 -->
+          <!-- 边上的动作文字: 显示精简行号，悬浮显示完整代码细节 -->
           <text
             :x="(getNodeX(edge.source) + getNodeX(edge.target)) / 2"
             :y="(getNodeY(edge.source) + getNodeY(edge.target)) / 2 - 12"
@@ -76,7 +81,8 @@
             text-anchor="middle"
             class="edge-label"
           >
-            {{ edge.action }}
+            {{ getEdgeLabel(edge) }}
+            <title>{{ getEdgeTooltip(edge) }}</title>
           </text>
         </g>
 
@@ -137,7 +143,7 @@ const props = defineProps<{
   activeNodeId?: string;
 }>();
 
-defineEmits(['select-node']);
+defineEmits(['select-node', 'select-line']);
 
 const windowSize = ref(30);
 
@@ -187,6 +193,23 @@ function getNodeY(id: string): number {
 
 function isEdgeActive(edge: any): boolean {
   return edge.target === props.activeNodeId;
+}
+
+function getEdgeLine(edge: any): number {
+  if (edge.line) return edge.line;
+  const targetNode = props.graph.nodes?.find((n) => n.id === edge.target);
+  return targetNode?.line || 0;
+}
+
+function getEdgeLabel(edge: any): string {
+  const line = getEdgeLine(edge);
+  return line ? `Line ${line}` : 'Step';
+}
+
+function getEdgeTooltip(edge: any): string {
+  const line = getEdgeLine(edge);
+  const prefix = line ? `[第 ${line} 行] ` : '';
+  return `${prefix}${edge.action || '状态转移'}`;
 }
 </script>
 
@@ -284,9 +307,24 @@ function isEdgeActive(edge: any): boolean {
   }
 }
 
+.edge-group {
+  cursor: pointer;
+}
+
+.edge-group:hover line {
+  stroke: #38bdf8 !important;
+  stroke-width: 2.5 !important;
+}
+
+.edge-group:hover text {
+  fill: #38bdf8 !important;
+  font-weight: bold;
+}
+
 .edge-label {
   user-select: none;
   background: #090d16;
+  transition: fill 0.2s ease;
 }
 
 .sm-canvas-wrapper svg text {

@@ -1006,6 +1006,7 @@ export class VirtualMachine {
         source: this.lastStateNodeId,
         target: newNodeId,
         action,
+        line: snapshot.line,
       });
     }
 

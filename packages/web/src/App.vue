@@ -171,6 +171,7 @@
         :graph="stateGraph"
         :active-node-id="activeNodeId"
         @select-node="onSelectNode"
+        @select-line="onSelectLine"
       />
     </footer>
   </div>
@@ -357,6 +358,12 @@ function onSelectNode(node: any) {
   currentLine.value = node.line;
   currentScope.value = node.variables;
   activeNodeId.value = node.id;
+}
+
+function onSelectLine(line: number) {
+  if (line > 0) {
+    currentLine.value = line;
+  }
 }
 
 function formatType(val: any): string {

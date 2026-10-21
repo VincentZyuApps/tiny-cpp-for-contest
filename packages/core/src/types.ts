@@ -380,6 +380,7 @@ export interface StateMachineEdge {
   source: string;
   target: string;
   action: string;
+  line?: number;
 }
 
 export interface StateMachineGraph {
