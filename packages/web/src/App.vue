@@ -105,7 +105,7 @@
               </button>
             </div>
 
-            <!-- 连续播放与调速胶囊 -->
+            <!-- 连续播放与三档调速胶囊 -->
             <div class="play-group">
               <button
                 class="btn"
@@ -115,21 +115,35 @@
               >
                 {{ isPlaying ? '⏸ 暂停' : '▶ 播放' }}
               </button>
-              <div class="speed-slider-box" title="调节自动步进间隔 (0.1s ~ 2.0s)">
-                <span class="speed-icon">⏱</span>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="2.0"
-                  step="0.1"
-                  v-model.number="stepSpeed"
-                  class="speed-slider"
-                />
-                <span class="speed-value">{{ stepSpeed.toFixed(1) }}s</span>
+
+              <!-- 三档调速分段按钮 (最慢 / 推荐 / 最快) -->
+              <div class="speed-presets">
+                <button
+                  class="speed-btn"
+                  :class="{ active: Math.abs(stepSpeed - 2.0) < 0.05 }"
+                  title="最慢速度 (2.0s / 步，从容精读)"
+                  @click="setSpeed(2.0)"
+                >
+                  🐢 2.0s
+                </button>
+                <button
+                  class="speed-btn"
+                  :class="{ active: Math.abs(stepSpeed - 1.0) < 0.05 }"
+                  title="推荐速度 (1.0s / 步，标准心智节奏)"
+                  @click="setSpeed(1.0)"
+                >
+                  🎯 1.0s
+                </button>
+                <button
+                  class="speed-btn"
+                  :class="{ active: Math.abs(stepSpeed - 0.1) < 0.05 }"
+                  title="最快速度 (0.1s / 步，极速巡航到底)"
+                  @click="setSpeed(0.1)"
+                >
+                  ⚡ 0.1s
+                </button>
               </div>
-              <button class="btn btn-secondary" title="瞬时执行到底 (跳过动画)" @click="handleRunAll">
-                ⚡ 瞬达
-              </button>
+
               <button class="btn btn-danger" title="重置状态机" @click="handleReset">
                 🔄 重置
               </button>
@@ -319,6 +333,10 @@ function startPlay() {
       stopPlay();
     }
   }, intervalMs);
+}
+
+function setSpeed(speed: number) {
+  stepSpeed.value = speed;
 }
 
 function togglePlay() {
@@ -765,34 +783,35 @@ onMounted(() => {
 .btn-danger { background: #dc2626; color: #fff; }
 .btn-danger:hover { background: #b91c1c; }
 
-.speed-slider-box {
+.speed-presets {
   display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 0 4px;
+  background: #020617;
+  border-radius: 4px;
+  border: 1px solid #1e293b;
+  overflow: hidden;
+}
+
+.speed-btn {
+  padding: 4px 7px;
   font-size: 11px;
+  background: transparent;
   color: #94a3b8;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
   white-space: nowrap;
   user-select: none;
 }
 
-.speed-icon {
-  font-size: 12px;
+.speed-btn:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.speed-slider {
-  width: 65px;
-  height: 4px;
-  cursor: pointer;
-  accent-color: #38bdf8;
-}
-
-.speed-value {
-  min-width: 28px;
-  color: #38bdf8;
-  font-size: 11px;
-  font-weight: bold;
-  text-align: right;
+.speed-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  font-weight: 700;
 }
 
 .stats-bar {

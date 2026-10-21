@@ -1,6 +1,6 @@
 {
   "name": "tiny-cpp-for-contest-core",
-  "version": "0.1.2-beta.3+20261022",
+  "version": "0.1.3-beta.4+20261022",
   "description": "纯 TypeScript 实现的算法竞赛 C++ 解释器与状态机核心引擎",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
