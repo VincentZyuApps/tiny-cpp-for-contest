@@ -6,7 +6,10 @@
         <span class="logo">⚡</span>
         <div class="brand-text">
           <h1>Tiny C++ for Contest</h1>
-          <span class="subtitle">程序就是一个状态机 —— 致敬南京大学 蒋炎岩 (jyy) 老师</span>
+          <div class="subtitle-box">
+            <span class="quote-line">“编译和解释没有绝对的界限，他们的界限是模糊的。”</span>
+            <span class="author-line">—— 致敬南京大学 蒋炎岩 (jyy) 老师</span>
+          </div>
         </div>
       </div>
 
@@ -418,12 +421,32 @@ onMounted(() => {
 
 /* 顶部导航 */
 .top-nav {
+  position: relative;
+  z-index: 20;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
   background: #0f172a;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid #334155;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.55), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+}
+
+.top-nav::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(56, 189, 248, 0.5) 0%,
+    rgba(74, 222, 128, 0.3) 30%,
+    rgba(30, 41, 59, 0.2) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
 }
 
 .brand {
@@ -436,16 +459,38 @@ onMounted(() => {
   font-size: 28px;
 }
 
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
 .brand h1 {
   font-size: 16px;
   font-weight: 700;
   color: #f8fafc;
 }
 
-.brand .subtitle {
+.subtitle-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 2px;
+}
+
+.quote-line {
   font-size: 11px;
   color: #38bdf8;
   font-style: italic;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.author-line {
+  font-size: 10px;
+  color: #94a3b8;
+  align-self: flex-end;
+  opacity: 0.85;
+  white-space: nowrap;
 }
 
 .top-actions {
