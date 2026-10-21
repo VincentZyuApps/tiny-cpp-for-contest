@@ -6,7 +6,8 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { EditorView, basicSetup } from 'codemirror';
 import { cpp } from '@codemirror/lang-cpp';
-import { oneDark } from '@codemirror/theme-one-dark';
+import { oneDark, oneDarkHighlightStyle } from '@codemirror/theme-one-dark';
+import { syntaxHighlighting } from '@codemirror/language';
 import { StateEffect, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet } from '@codemirror/view';
 
@@ -57,7 +58,6 @@ const customTheme = EditorView.theme({
     width: '100%',
     fontSize: '13px',
     backgroundColor: '#020617',
-    color: '#f8fafc',
     fontFamily:
       "'Cascadia Code Variable', 'Cascadia Code', 'LXGW WenKai', ui-monospace, Menlo, Monaco, Consolas, monospace",
   },
@@ -109,6 +109,7 @@ onMounted(() => {
       basicSetup,
       cpp(),
       oneDark,
+      syntaxHighlighting(oneDarkHighlightStyle),
       customTheme,
       currentLineField,
       EditorView.updateListener.of((update) => {
