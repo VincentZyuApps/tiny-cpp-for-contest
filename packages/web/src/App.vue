@@ -75,26 +75,11 @@
           <span class="status-indicator">当前行: L{{ currentLine || 1 }}</span>
         </div>
         <div class="editor-container">
-          <!-- 行号栏与光标指示 -->
-          <div class="line-gutter">
-            <div
-              v-for="lineNum in lineCount"
-              :key="lineNum"
-              class="gutter-cell"
-              :class="{ 'active-line': lineNum === currentLine }"
-            >
-              <span v-if="lineNum === currentLine" class="arrow-cursor">👉</span>
-              <span class="line-num">{{ lineNum }}</span>
-            </div>
-          </div>
-          <!-- 源码输入框 -->
-          <textarea
-            class="code-textarea"
+          <CodeEditor
             v-model="sourceCode"
-            spellcheck="false"
-            @input="onCodeChange"
-            placeholder="在此输入 C++ 代码..."
-          ></textarea>
+            :current-line="currentLine"
+            @change="onCodeChange"
+          />
         </div>
       </section>
 
@@ -251,6 +236,7 @@ import {
   HostPriorityQueue,
 } from 'tiny-cpp-for-contest-core';
 import StateMachineGraph from './components/StateMachineGraph.vue';
+import CodeEditor from './components/CodeEditor.vue';
 
 // 模式
 type RunMode = 'batch' | 'stepper' | 'repl';
@@ -279,11 +265,6 @@ const activeNodeId = ref<string>('');
 const isPlaying = ref(false);
 const stepSpeed = ref(1.0); // 默认 1.0s 间隔
 let playTimer: any = null;
-
-// 计算行数
-const lineCount = computed(() => {
-  return sourceCode.value.split('\n').length || 1;
-});
 
 // 载入预设案例
 function loadSelectedExample() {
@@ -714,53 +695,6 @@ onMounted(() => {
   flex: 1;
   background: #020617;
   overflow: hidden;
-}
-
-.line-gutter {
-  width: 45px;
-  background: #090d16;
-  border-right: 1px solid #1e293b;
-  user-select: none;
-  padding: 8px 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.gutter-cell {
-  height: 22px;
-  line-height: 22px;
-  display: flex;
-  justify-content: flex-end;
-  padding-right: 8px;
-  font-size: 12px;
-  color: #475569;
-  position: relative;
-}
-
-.gutter-cell.active-line {
-  background: #1e293b;
-  color: #38bdf8;
-  font-weight: bold;
-}
-
-.arrow-cursor {
-  position: absolute;
-  left: 4px;
-  font-size: 10px;
-}
-
-.code-textarea {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #e2e8f0;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 22px;
-  padding: 8px 12px;
-  resize: none;
-  white-space: pre;
 }
 
 /* 控制面板 */
