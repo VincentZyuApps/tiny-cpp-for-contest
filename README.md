@@ -1,6 +1,6 @@
 # tiny-cpp-for-contest
 
-> 纯 TypeScript 实现的算法竞赛级 C++ 运行时、可交互评测系统与教学级状态机调试工具。
+> ⚡ 纯 TypeScript 实现的算法竞赛级 C++ 运行时、可交互评测系统与 📊 教学级状态机调试工具 ✨
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/Online%20Playground-GitHub%20Pages-success?logo=github)](https://vincentzyuapps.github.io/tiny-cpp-for-contest/)
