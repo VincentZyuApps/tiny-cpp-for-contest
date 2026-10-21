@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-tiny-cpp-for-contest",
-  "version": "0.1.1-beta.2+20261022",
+  "version": "0.1.2-beta.3+20261022",
   "description": "基于纯 TS C++ 状态机引擎的算法竞赛评测与交互插件",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",

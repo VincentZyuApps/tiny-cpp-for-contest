@@ -86,27 +86,54 @@
 
       <!-- 右栏: 控制器、变量观察器与标准 I/O -->
       <section class="side-section">
-        <!-- 调试控制栏 (四键天王) -->
+        <!-- 调试控制栏 (播放器 + 导航) -->
         <div class="control-panel">
-          <div class="btn-group">
-            <button class="btn btn-secondary" title="上一行 (时间旅行倒流)" @click="handlePrevLine">
-              ⏮ 上一行
-            </button>
-            <button class="btn btn-primary" title="下一行 (Step Over)" @click="handleNextLine">
-              ⏭ 下一行
-            </button>
-            <button class="btn btn-secondary" title="上一步微步" @click="handlePrevStep">
-              ⏪ 上一步
-            </button>
-            <button class="btn btn-primary" title="下一步微步" @click="handleNextStep">
-              ⏩ 下一步
-            </button>
-            <button class="btn btn-success" title="全速运行到底" @click="handleRunAll">
-              ⏯ 运行到底
-            </button>
-            <button class="btn btn-danger" title="重置状态机" @click="handleReset">
-              🔄 重置
-            </button>
+          <div class="control-actions">
+            <!-- 单步微调组 -->
+            <div class="btn-group">
+              <button class="btn btn-secondary" title="上一行 (时间旅行回退)" @click="handlePrevLine">
+                ⏮ 上行
+              </button>
+              <button class="btn btn-primary" title="下一行 (Step Over)" @click="handleNextLine">
+                ⏭ 下行
+              </button>
+              <button class="btn btn-secondary" title="上一步微步" @click="handlePrevStep">
+                ⏪ 上步
+              </button>
+              <button class="btn btn-primary" title="下一步微步" @click="handleNextStep">
+                ⏩ 下步
+              </button>
+            </div>
+
+            <!-- 连续播放与调速胶囊 -->
+            <div class="play-group">
+              <button
+                class="btn"
+                :class="isPlaying ? 'btn-warning' : 'btn-success'"
+                :title="isPlaying ? '暂停自动播放' : '以指定间隔自动步进执行'"
+                @click="togglePlay"
+              >
+                {{ isPlaying ? '⏸ 暂停' : '▶ 播放' }}
+              </button>
+              <div class="speed-slider-box" title="调节自动步进间隔 (0.1s ~ 2.0s)">
+                <span class="speed-icon">⏱</span>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="2.0"
+                  step="0.1"
+                  v-model.number="stepSpeed"
+                  class="speed-slider"
+                />
+                <span class="speed-value">{{ stepSpeed.toFixed(1) }}s</span>
+              </div>
+              <button class="btn btn-secondary" title="瞬时执行到底 (跳过动画)" @click="handleRunAll">
+                ⚡ 瞬达
+              </button>
+              <button class="btn btn-danger" title="重置状态机" @click="handleReset">
+                🔄 重置
+              </button>
+            </div>
           </div>
 
           <!-- 评测状态指标 -->
@@ -181,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import {
   PRESET_EXAMPLES,
   createVM,
@@ -220,6 +247,11 @@ const judgeStatus = ref<string | null>(null);
 const stateGraph = ref<{ nodes: any[]; edges: any[] }>({ nodes: [], edges: [] });
 const activeNodeId = ref<string>('');
 
+// 自动播放连续步进
+const isPlaying = ref(false);
+const stepSpeed = ref(1.0); // 默认 1.0s 间隔
+let playTimer: any = null;
+
 // 计算行数
 const lineCount = computed(() => {
   return sourceCode.value.split('\n').length || 1;
@@ -249,6 +281,7 @@ function switchMode(mode: RunMode) {
 }
 
 function handleReset() {
+  stopPlay();
   try {
     vm = createVM(sourceCode.value, stdinText.value);
     const snap = vm.step(); // 步入第一条语句前
@@ -265,6 +298,46 @@ function handleReset() {
     stdoutBuffer.value = String(err?.message || err);
   }
 }
+
+function stopPlay() {
+  if (playTimer) {
+    clearInterval(playTimer);
+    playTimer = null;
+  }
+  isPlaying.value = false;
+}
+
+function startPlay() {
+  stopPlay();
+  if (!vm) handleReset();
+  isPlaying.value = true;
+
+  const intervalMs = Math.max(50, Math.round(stepSpeed.value * 1000));
+  playTimer = setInterval(() => {
+    const hasMore = handleNextLine();
+    if (!hasMore) {
+      stopPlay();
+    }
+  }, intervalMs);
+}
+
+function togglePlay() {
+  if (isPlaying.value) {
+    stopPlay();
+  } else {
+    startPlay();
+  }
+}
+
+watch(stepSpeed, () => {
+  if (isPlaying.value) {
+    startPlay();
+  }
+});
+
+onUnmounted(() => {
+  stopPlay();
+});
 
 function updateGraph() {
   if (vm) {
@@ -300,11 +373,12 @@ function handlePrevStep() {
   }
 }
 
-function handleNextLine() {
+function handleNextLine(): boolean {
   if (!vm) handleReset();
-  if (!vm) return;
+  if (!vm) return false;
 
   const startLine = currentLine.value;
+  let isDone = false;
   // 一直单步，直到行号发生变化或程序结束
   for (let i = 0; i < 50; i++) {
     const snap = vm.step();
@@ -312,9 +386,14 @@ function handleNextLine() {
     currentScope.value = snap.scope;
     stdoutBuffer.value = snap.stdout;
     executedSteps.value = snap.stepIndex;
-    if (snap.done || snap.line !== startLine) break;
+    if (snap.done) {
+      isDone = true;
+      break;
+    }
+    if (snap.line !== startLine) break;
   }
   updateGraph();
+  return !isDone;
 }
 
 function handlePrevLine() {
@@ -333,6 +412,7 @@ function handlePrevLine() {
 }
 
 function handleRunAll() {
+  stopPlay();
   const startTime = Date.now();
   if (expectedStdout.value && expectedStdout.value.trim() !== '-') {
     const res = judgeCode(sourceCode.value, stdinText.value, expectedStdout.value);
@@ -629,26 +709,49 @@ onMounted(() => {
 
 /* 控制面板 */
 .control-panel {
-  padding: 10px 14px;
+  padding: 8px 12px;
   background: #0f172a;
   border-bottom: 1px solid #1e293b;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.control-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn-group {
   display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.play-group {
+  display: flex;
   gap: 6px;
+  align-items: center;
+  background: #090d16;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
 }
 
 .btn {
-  padding: 6px 10px;
+  padding: 5px 8px;
   font-size: 12px;
   border-radius: 4px;
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  user-select: none;
 }
 
 .btn-primary { background: #2563eb; color: #fff; }
@@ -657,15 +760,49 @@ onMounted(() => {
 .btn-secondary:hover { background: #475569; }
 .btn-success { background: #16a34a; color: #fff; }
 .btn-success:hover { background: #15803d; }
+.btn-warning { background: #d97706; color: #fff; }
+.btn-warning:hover { background: #b45309; }
 .btn-danger { background: #dc2626; color: #fff; }
 .btn-danger:hover { background: #b91c1c; }
+
+.speed-slider-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 4px;
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.speed-icon {
+  font-size: 12px;
+}
+
+.speed-slider {
+  width: 65px;
+  height: 4px;
+  cursor: pointer;
+  accent-color: #38bdf8;
+}
+
+.speed-value {
+  min-width: 28px;
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: right;
+}
 
 .stats-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   font-size: 12px;
   color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .status-badge {
