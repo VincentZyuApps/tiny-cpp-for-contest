@@ -328,7 +328,7 @@ function getEdgeTooltip(edge: any): string {
 }
 
 .sm-canvas-wrapper svg text {
-  font-family: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'Cascadia Code Variable', 'Cascadia Code', 'LXGW WenKai', ui-monospace, monospace;
 }
 
 .empty-hint {

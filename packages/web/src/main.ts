@@ -1,5 +1,5 @@
 import '@free-fonts/lxgw-wenkai/lxgw-wenkai.css';
-import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/cascadia-code';
 import { createApp } from 'vue';
 import App from './App.vue';
 
