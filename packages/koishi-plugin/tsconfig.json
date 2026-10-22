@@ -1,12 +1,16 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "bundler",
     "rootDir": "src",
     "outDir": "lib",
-    "baseUrl": ".",
-    "paths": {
-      "tiny-cpp-for-contest-core": ["../core/src/index.ts"]
-    }
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": [
     "src"
