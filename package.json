@@ -1,8 +1,8 @@
 {
   "name": "tiny-cpp-for-contest-monorepo",
-  "version": "0.1.6-beta.8+20261022",
+  "version": "0.1.7-beta.9+20261022",
   "private": true,
-  "description": "纯 TypeScript 实现的算法竞赛级 C++ 运行时与教学级状态机调试工具",
+  "description": "⚡ 纯 TypeScript 实现的算法竞赛级 C++ 运行时与 📊 教学级状态机调试工具 ✨",
   "workspaces": [
     "packages/*"
   ],

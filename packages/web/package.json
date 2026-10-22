@@ -1,8 +1,8 @@
 {
   "name": "tiny-cpp-for-contest-web",
-  "version": "0.1.6-beta.8+20261022",
+  "version": "0.1.7-beta.9+20261022",
   "private": true,
-  "description": "基于 Vue 3 的算法竞赛 C++ 可视化状态机调试器",
+  "description": "🌐 基于 Vue 3 的算法竞赛 C++ 可视化状态机调试器与 📊 状态机图模型 ✨",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

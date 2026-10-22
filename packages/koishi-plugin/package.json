@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-tiny-cpp-for-contest",
-  "version": "0.1.6-beta.8+20261022",
-  "description": "基于纯 TS C++ 状态机引擎的算法竞赛评测与交互插件",
+  "version": "0.1.7-beta.9+20261022",
+  "description": "🤖 基于纯 TS C++ 状态机引擎的算法竞赛评测与 ⚡ 交互插件 ✨",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -23,7 +23,7 @@
   "author": "VincentZyu",
   "license": "MIT",
   "dependencies": {
-    "tiny-cpp-for-contest-core": "^0.1.6-beta.8"
+    "tiny-cpp-for-contest-core": "^0.1.7-beta.9"
   },
   "peerDependencies": {
     "koishi": "^4.18.7"
