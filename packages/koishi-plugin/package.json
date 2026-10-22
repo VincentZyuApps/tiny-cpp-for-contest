@@ -22,6 +22,9 @@
   ],
   "author": "VincentZyu",
   "license": "MIT",
+  "dependencies": {
+    "tiny-cpp-for-contest-core": "^0.1.6-beta.8"
+  },
   "peerDependencies": {
     "koishi": "^4.18.7"
   },

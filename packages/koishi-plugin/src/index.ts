@@ -4,7 +4,7 @@
  */
 
 import { Context, Schema, Session } from 'koishi';
-import { runCode, judgeCode, PRESET_EXAMPLES } from './core';
+import { runCode, judgeCode, PRESET_EXAMPLES } from 'tiny-cpp-for-contest-core';
 
 export interface Config {
   promptTimeout: number; // 提示超时时长 (秒)

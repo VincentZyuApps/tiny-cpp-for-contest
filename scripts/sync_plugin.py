@@ -108,14 +108,11 @@ def main():
         else:
             shutil.copy2(item, dest_item)
 
-    # 关键步骤 1: 将 packages/core/src 完整内联同步到目标的 src/core 中
-    src_core_dir = repo_root / "packages" / "core" / "src"
-    target_core_dir = target_plugin_dir / "src" / "core"
-    if src_core_dir.exists():
-        if target_core_dir.exists():
-            shutil.rmtree(target_core_dir)
-        print(f"🔗 [内联核心] 正在将核心解释器源码嵌入目标插件: {target_core_dir}")
-        shutil.copytree(src_core_dir, target_core_dir, ignore=IGNORE_PATTERNS)
+    # 彻底清理目标目录中遗留的历史 src/core 冗余目录 (已解耦为独立 npm 依赖)
+    legacy_core_dir = target_plugin_dir / "src" / "core"
+    if legacy_core_dir.exists():
+        print(f"🧹 [清理冗余] 正在清除目标中旧版的嵌入核心源码: {legacy_core_dir}")
+        shutil.rmtree(legacy_core_dir)
 
     # 关键步骤 2: 自动建立宿主 node_modules 下的 workspace Junction 软链接
     # Koishi 控制台的 LocalScanner 仅扫描宿主 node_modules/koishi-plugin-* 目录
